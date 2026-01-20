@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelForge - Cyberpunk Portfolio</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.2.4/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'sans-serif'],
+                        'jetbrains': ['JetBrains Mono', 'monospace'],
+                        'pixel': ['Press Start 2P', 'cursive']
+                    },
+                    colors: {
+                        'cyber-dark': '#0a0a0a',
+                        'cyber-mid': '#1a1a2e',
+                        'cyber-purple': '#16213e',
+                        'neon-cyan': '#00d4ff',
+                        'neon-pink': '#ff006e',
+                        'neon-green': '#39ff14',
+                        'text-light': '#e0e0e0',
+                        'text-dim': '#888888'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom Styles */
+        body {
+            background: #0a0a0a;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+        
+        .neon-glow {
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+        }
+        
+        .pixel-border {
+            border: 2px solid;
+            image-rendering: pixelated;
+        }
+        
+        .pixel-button {
+            position: relative;
+            transition: all 0.3s ease;
+            image-rendering: pixelated;
+        }
+        
+        .pixel-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .pixel-button:active {
+            transform: scale(0.95);
+        }
+        
+        .typewriter-cursor {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .animate-pulse-neon {
+            animation: pulse-neon 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-neon {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
+        }
+        
+        .skill-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #00d4ff;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .project-preview {
+            background: linear-gradient(45deg, #16213e, #1a1a2e);
+            border: 1px solid #ff006e;
+            transition: all 0.4s ease;
+        }
+        
+        .project-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.4);
+        }
+        
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s ease;
+        }
+        
+        .copy-success {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #39ff14;
+            color: #0a0a0a;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .coming-soon-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #00d4ff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .modal-content h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .modal-content button {
+            background: #ff006e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-content button:hover {
+            background: #00d4ff;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-text-light font-jetbrains">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-cyber-dark/90 backdrop-blur-sm border-b border-neon-cyan/30">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="font-orbitron text-2xl font-bold text-neon-cyan neon-glow">
+                    PIXELFORGE
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">Home</a>
+                    <a href="about.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">About</a>
+                    <a href="portfolio.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">Portfolio</a>
+                    <a href="contact.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">Contact</a>
+                </div>
+                
+                <div class="md:hidden">
+                    <button class="text-neon-cyan">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+        <div class="grid-pattern absolute inset-0 opacity-20"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <div class="mb-8 fade-in">
+                <img src="resources/hero-pixel.png" alt="Cyberpunk Hero" class="mx-auto w-96 h-64 object-cover rounded-lg border-2 border-neon-cyan animate-float">
+            </div>
+            
+            <h1 class="font-orbitron text-6xl md:text-8xl font-black mb-6 fade-in">
+                <span class="neon-text text-neon-cyan neon-glow typewriter">CYBERPUNK</span>
+                <br>
+                <span class="text-neon-pink neon-glow typewriter">DEVELOPER</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-text-dim mb-8 max-w-3xl mx-auto fade-in typewriter">
+                Crafting digital experiences at the intersection of retro aesthetics and cutting-edge technology. 
+                Welcome to my pixelated universe where code meets art.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center fade-in">
+                <button onclick="window.location.href='portfolio.html'" class="pixel-button bg-neon-cyan text-cyber-dark px-8 py-4 font-bold text-lg hover:bg-neon-pink transition-all duration-300">
+                    EXPLORE WORK
+                </button>
+                <button onclick="window.location.href='contact.html'" class="pixel-button border-2 border-neon-pink text-neon-pink px-8 py-4 font-bold text-lg hover:bg-neon-pink hover:text-cyber-dark transition-all duration-300">
+                    GET IN TOUCH
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Preview Section -->
+    <section class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="font-orbitron text-4xl md:text-5xl font-bold text-center mb-16 neon-glow text-neon-green">
+                <span class="typewriter">SKILL MATRIX</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-neon-cyan text-4xl mb-4">⚡</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-neon-cyan">Frontend Development</h3>
+                    <p class="text-text-dim mb-4">React, Vue.js, TypeScript, Three.js</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-neon-cyan h-full rounded-full" data-progress="95"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-neon-pink text-4xl mb-4">🔥</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-neon-pink">Backend Systems</h3>
+                    <p class="text-text-dim mb-4">Node.js, Python, PostgreSQL, MongoDB</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-neon-pink h-full rounded-full" data-progress="88"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-neon-green text-4xl mb-4">🎮</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-neon-green">Game Development</h3>
+                    <p class="text-text-dim mb-4">Unity, Unreal Engine, WebGL, Canvas</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-neon-green h-full rounded-full" data-progress="82"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-yellow-400 text-4xl mb-4">🎨</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-yellow-400">UI/UX Design</h3>
+                    <p class="text-text-dim mb-4">Figma, Adobe Creative, Prototyping</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-yellow-400 h-full rounded-full" data-progress="90"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-purple-400 text-4xl mb-4">🚀</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-purple-400">DevOps</h3>
+                    <p class="text-text-dim mb-4">Docker, AWS, CI/CD, Kubernetes</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-purple-400 h-full rounded-full" data-progress="75"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-card p-6 rounded-lg animate-on-scroll">
+                    <div class="text-red-400 text-4xl mb-4">🔒</div>
+                    <h3 class="font-orbitron text-xl font-bold mb-3 text-red-400">Cybersecurity</h3>
+                    <p class="text-text-dim mb-4">Penetration Testing, Encryption, Security Audits</p>
+                    <div class="skill-bar bg-cyber-mid rounded-full h-2">
+                        <div class="skill-progress bg-red-400 h-full rounded-full" data-progress="70"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Projects Preview -->
+    <section class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="font-orbitron text-4xl md:text-5xl font-bold text-center mb-16 neon-glow text-neon-pink">
+                <span class="typewriter">FEATURED PROJECTS</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="project-preview p-6 rounded-lg animate-on-scroll project-card">
+                    <div class="aspect-video bg-cyber-mid rounded-lg mb-4 overflow-hidden">
+                        <img src="https://kimi-web-img.moonshot.cn/img/www.bluecompass.com/ba3064685e3f52dde1df2a3a8d9abd14e347b7da.jpg" 
+                             alt="Dark Mode Web App" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-cyan">NEXUS Dashboard</h3>
+                    <p class="text-text-dim mb-4">A cyberpunk-themed analytics dashboard with real-time data visualization and interactive charts.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-neon-cyan/20 text-neon-cyan px-3 py-1 rounded text-sm">React</span>
+                        <span class="bg-neon-pink/20 text-neon-pink px-3 py-1 rounded text-sm">Three.js</span>
+                        <span class="bg-neon-green/20 text-neon-green px-3 py-1 rounded text-sm">WebGL</span>
+                    </div>
+                </div>
+                
+                <div class="project-preview p-6 rounded-lg animate-on-scroll project-card">
+                    <div class="aspect-video bg-cyber-mid rounded-lg mb-4 overflow-hidden">
+                        <img src="https://kimi-web-img.moonshot.cn/img/cdn.dribbble.com/f5d56c218ab07ad63824cf912824bd56c463ab7e.png" 
+                             alt="Cyberpunk Interface" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-pink">CYBER Interface</h3>
+                    <p class="text-text-dim mb-4">Futuristic UI components library with neon aesthetics and smooth animations for web applications.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-neon-cyan/20 text-neon-cyan px-3 py-1 rounded text-sm">Vue.js</span>
+                        <span class="bg-neon-pink/20 text-neon-pink px-3 py-1 rounded text-sm">Anime.js</span>
+                        <span class="bg-neon-green/20 text-neon-green px-3 py-1 rounded text-sm">Canvas</span>
+                    </div>
+                </div>
+                
+                <div class="project-preview p-6 rounded-lg animate-on-scroll project-card">
+                    <div class="aspect-video bg-cyber-mid rounded-lg mb-4 overflow-hidden">
+                        <img src="https://kimi-web-img.moonshot.cn/img/cdn.pixilart.com/66cb2b00fbfe5f545800637d11df39d9281239fc.png" 
+                             alt="Pixel Art Mobile App" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-green">PIXEL Mobile</h3>
+                    <p class="text-text-dim mb-4">Retro gaming mobile application with pixel art graphics and nostalgic gameplay mechanics.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-neon-cyan/20 text-neon-cyan px-3 py-1 rounded text-sm">React Native</span>
+                        <span class="bg-neon-pink/20 text-neon-pink px-3 py-1 rounded text-sm">Unity</span>
+                        <span class="bg-neon-green/20 text-neon-green px-3 py-1 rounded text-sm">WebGL</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <button onclick="window.location.href='portfolio.html'" class="pixel-button bg-neon-green text-cyber-dark px-8 py-4 font-bold text-lg hover:bg-neon-cyan transition-all duration-300">
+                    VIEW ALL PROJECTS
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact CTA Section -->
+    <section class="py-20 relative">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="font-orbitron text-4xl md:text-5xl font-bold mb-8 neon-glow text-neon-cyan">
+                <span class="typewriter">READY TO COLLABORATE?</span>
+            </h2>
+            
+            <p class="text-xl text-text-dim mb-8">
+                Let's create something extraordinary together. From concept to deployment, 
+                I'll help bring your digital vision to life with pixel-perfect precision.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <button onclick="window.location.href='contact.html'" class="pixel-button bg-neon-cyan text-cyber-dark px-8 py-4 font-bold text-lg hover:bg-neon-pink transition-all duration-300">
+                    START A PROJECT
+                </button>
+                <button onclick="copyToClipboard('hello@pixelforge.dev')" class="pixel-button border-2 border-neon-green text-neon-green px-8 py-4 font-bold text-lg hover:bg-neon-green hover:text-cyber-dark transition-all duration-300">
+                    COPY EMAIL
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-cyber-mid">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="font-orbitron text-2xl font-bold text-neon-cyan neon-glow mb-4">
+                PIXELFORGE
+            </div>
+            <p class="text-text-dim mb-6">
+                Crafting digital experiences with pixel-perfect precision
+            </p>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" onclick="showComingSoon()" class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                    </svg>
+                </a>
+                <a href="#" onclick="showComingSoon()" class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                </a>
+                <a href="#" onclick="showComingSoon()" class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"/>
+                    </svg>
+                </a>
+            </div>
+            <p class="text-text-dim text-sm">
+                © 2024 PixelForge. All rights reserved. Built with passion and pixels.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Load main JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>

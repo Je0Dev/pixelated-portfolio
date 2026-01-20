@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - PixelForge</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'sans-serif'],
+                        'jetbrains': ['JetBrains Mono', 'monospace'],
+                        'pixel': ['Press Start 2P', 'cursive']
+                    },
+                    colors: {
+                        'cyber-dark': '#0a0a0a',
+                        'cyber-mid': '#1a1a2e',
+                        'cyber-purple': '#16213e',
+                        'neon-cyan': '#00d4ff',
+                        'neon-pink': '#ff006e',
+                        'neon-green': '#39ff14',
+                        'text-light': '#e0e0e0',
+                        'text-dim': '#888888'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background: #0a0a0a;
+            overflow-x: hidden;
+        }
+        
+        .neon-glow {
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+        }
+        
+        .filter-btn {
+            position: relative;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .filter-btn.active {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+        }
+        
+        .project-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #00d4ff;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .project-card:hover::before {
+            left: 100%;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+            border-color: #ff006e;
+        }
+        
+        .project-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .project-card:hover .project-image::after {
+            transform: translateX(100%);
+        }
+        
+        .tech-badge {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-badge:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .animate-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s ease;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #00d4ff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #ff006e;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-text-light font-jetbrains">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-cyber-dark/90 backdrop-blur-sm border-b border-neon-cyan/30">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="font-orbitron text-2xl font-bold text-neon-cyan neon-glow">
+                    <a href="index.html">PIXELFORGE</a>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">Home</a>
+                    <a href="about.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">About</a>
+                    <a href="portfolio.html" class="nav-link text-neon-cyan">Portfolio</a>
+                    <a href="contact.html" class="nav-link text-text-light hover:text-neon-cyan transition-colors duration-300">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 relative">
+        <div class="grid-pattern absolute inset-0 opacity-20"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h1 class="font-orbitron text-5xl md:text-7xl font-black mb-6 neon-glow text-neon-cyan">
+                <span class="typewriter">PORTFOLIO</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-text-dim mb-12 max-w-3xl mx-auto">
+                A collection of cyberpunk-inspired projects that push the boundaries of web technology 
+                and digital aesthetics. Each project represents a unique fusion of code and art.
+            </p>
+        </div>
+    </section>
+
+    <!-- Filter Buttons -->
+    <section class="pb-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="filter-btn active bg-cyber-mid px-6 py-3 rounded-lg font-bold text-neon-cyan" data-filter="all">
+                    ALL PROJECTS
+                </button>
+                <button class="filter-btn bg-cyber-mid px-6 py-3 rounded-lg font-bold text-text-light" data-filter="web">
+                    WEB APPS
+                </button>
+                <button class="filter-btn bg-cyber-mid px-6 py-3 rounded-lg font-bold text-text-light" data-filter="mobile">
+                    MOBILE
+                </button>
+                <button class="filter-btn bg-cyber-mid px-6 py-3 rounded-lg font-bold text-text-light" data-filter="game">
+                    GAMES
+                </button>
+                <button class="filter-btn bg-cyber-mid px-6 py-3 rounded-lg font-bold text-text-light" data-filter="design">
+                    DESIGN
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Grid -->
+    <section class="pb-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="projects-grid">
+                
+                <!-- Project 1 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="web" onclick="openModal('project1')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/www.bluecompass.com/ba3064685e3f52dde1df2a3a8d9abd14e347b7da.jpg" 
+                             alt="NEXUS Dashboard" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-cyan">NEXUS Dashboard</h3>
+                        <p class="text-text-dim mb-4">A cyberpunk-themed analytics dashboard with real-time data visualization and interactive charts.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">React</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Three.js</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">WebGL</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Node.js</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2024</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="web" onclick="openModal('project2')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/cdn.dribbble.com/f5d56c218ab07ad63824cf912824bd56c463ab7e.png" 
+                             alt="CYBER Interface" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-pink">CYBER Interface</h3>
+                        <p class="text-text-dim mb-4">Futuristic UI components library with neon aesthetics and smooth animations for web applications.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Vue.js</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Anime.js</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Canvas</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">SASS</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2024</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="mobile" onclick="openModal('project3')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/cdn.pixilart.com/66cb2b00fbfe5f545800637d11df39d9281239fc.png" 
+                             alt="PIXEL Mobile" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-green">PIXEL Mobile</h3>
+                        <p class="text-text-dim mb-4">Retro gaming mobile application with pixel art graphics and nostalgic gameplay mechanics.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">React Native</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Unity</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">WebGL</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Firebase</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2023</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 4 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="game" onclick="openModal('project4')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/m.media-amazon.com/23a0c58c0af5d118d550fb9087dfa6effd22554d.png" 
+                             alt="8-Bit Adventure" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-cyan">8-Bit Adventure</h3>
+                        <p class="text-text-dim mb-4">A retro-style platformer game with modern mechanics and cyberpunk storyline.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Unity</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">C#</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">WebGL</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Aseprite</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2023</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 5 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="design" onclick="openModal('project5')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/images.stockcake.com/2f1a9d6f52011f50d4aeae54d3e30e9792ee6edb.jpg" 
+                             alt="Neon Branding" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-pink">Neon Branding System</h3>
+                        <p class="text-text-dim mb-4">Complete brand identity design for a cyberpunk-themed tech startup including logo and UI kit.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Figma</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Illustrator</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">After Effects</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Blender</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2023</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 6 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="web" onclick="openModal('project6')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/pbxgeek.com/bbdd35f94f647a90e8f88a2a0b54d7c1efb39c81.png" 
+                             alt="Quantum OS" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-green">Quantum OS Interface</h3>
+                        <p class="text-text-dim mb-4">Futuristic operating system interface with holographic effects and gesture controls.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Electron</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">OpenGL</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Python</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">C++</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2024</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 7 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="game" onclick="openModal('project7')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/i.ytimg.com/1f7d7bb2da139700cf1bc20c97db124fc8433618.jpg" 
+                             alt="Cyber Runner" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-cyan">Cyber Runner VR</h3>
+                        <p class="text-text-dim mb-4">Immersive VR endless runner game set in a neon-lit cyberpunk cityscape.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Unity</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">C#</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">SteamVR</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Blender</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2024</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 8 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="mobile" onclick="openModal('project8')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/www.pixilart.com/683208a92f30263621481cddb9313cdf9420ee4a.png" 
+                             alt="Pixel Chat" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-pink">Pixel Chat App</h3>
+                        <p class="text-text-dim mb-4">Secure messaging app with retro pixel art styling and end-to-end encryption.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Flutter</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Dart</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Firebase</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Encryption</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2023</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 9 -->
+                <div class="project-item project-card rounded-lg overflow-hidden fade-in" data-category="design" onclick="openModal('project9')">
+                    <div class="project-image aspect-video">
+                        <img src="https://kimi-web-img.moonshot.cn/img/images.ui8.net/ce315314eeda8faec6f0c3f75f6ed529e7159bd3.png" 
+                             alt="Hologram UI" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-orbitron text-xl font-bold mb-2 text-neon-green">Hologram UI Kit</h3>
+                        <p class="text-text-dim mb-4">Comprehensive UI design system featuring holographic effects and futuristic components.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Figma</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Sketch</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Principle</span>
+                            <span class="tech-badge px-3 py-1 rounded text-sm">Protopie</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-neon-pink text-sm">2024</span>
+                            <button class="text-neon-cyan hover:text-neon-pink transition-colors duration-300">View Details →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Modals -->
+    <div id="project1" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('project1')">&times;</button>
+            <h2 class="font-orbitron text-3xl font-bold mb-6 text-neon-cyan">NEXUS Dashboard</h2>
+            <img src="https://kimi-web-img.moonshot.cn/img/www.bluecompass.com/ba3064685e3f52dde1df2a3a8d9abd14e347b7da.jpg" alt="NEXUS Dashboard" class="w-full h-64 object-cover rounded-lg mb-6">
+            <p class="text-text-dim mb-4">
+                A comprehensive analytics dashboard featuring real-time data visualization with cyberpunk aesthetics. 
+                Built with React and Three.js, it provides interactive 3D charts and holographic data displays.
+            </p>
+            <div class="mb-6">
+                <h4 class="font-bold text-neon-pink mb-2">Key Features:</h4>
+                <ul class="list-disc list-inside text-text-light space-y-1">
+                    <li>Real-time data streaming and visualization</li>
+                    <li>Interactive 3D charts with WebGL rendering</li>
+                    <li>Customizable cyberpunk themes</li>
+                    <li>Responsive design for all devices</li>
+                    <li>Advanced filtering and search capabilities</li>
+                </ul>
+            </div>
+            <div class="flex flex-wrap gap-3 mb-6">
+                <span class="tech-badge px-3 py-1 rounded text-sm">React</span>
+                <span class="tech-badge px-3 py-1 rounded text-sm">Three.js</span>
+                <span class="tech-badge px-3 py-1 rounded text-sm">WebGL</span>
+                <span class="tech-badge px-3 py-1 rounded text-sm">Node.js</span>
+                <span class="tech-badge px-3 py-1 rounded text-sm">Socket.io</span>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="showComingSoon()" class="bg-neon-cyan text-cyber-dark px-6 py-3 font-bold hover:bg-neon-pink transition-all duration-300">
+                    LIVE DEMO
+                </button>
+                <button onclick="showComingSoon()" class="border-2 border-neon-pink text-neon-pink px-6 py-3 font-bold hover:bg-neon-pink hover:text-cyber-dark transition-all duration-300">
+                    GITHUB
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional modals would go here... -->
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-cyber-mid">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="font-orbitron text-2xl font-bold text-neon-cyan neon-glow mb-4">
+                PIXELFORGE
+            </div>
+            <p class="text-text-dim text-sm">
+                © 2024 PixelForge. All rights reserved. Built with passion and pixels.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Project filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const projectItems = document.querySelectorAll('.project-item');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.dataset.filter;
+                    
+                    // Update active button
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter projects
+                    projectItems.forEach(item => {
+                        const category = item.dataset.category;
+                        
+                        if (filter === 'all' || category === filter) {
+                            item.style.display = 'block';
+                            // Animate in
+                            if (typeof anime !== 'undefined') {
+                                anime({
+                                    targets: item,
+                                    opacity: [0, 1],
+                                    scale: [0.8, 1],
+                                    duration: 600,
+                                    easing: 'easeOutBack',
+                                    delay: Math.random() * 200
+                                });
+                            }
+                        } else {
+                            // Animate out
+                            if (typeof anime !== 'undefined') {
+                                anime({
+                                    targets: item,
+                                    opacity: [1, 0],
+                                    scale: [1, 0.8],
+                                    duration: 400,
+                                    easing: 'easeInBack',
+                                    complete: () => {
+                                        item.style.display = 'none';
+                                    }
+                                });
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        });
+
+        // Modal functionality
+        function openModal(projectId) {
+            document.getElementById(projectId).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(projectId) {
+            document.getElementById(projectId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+    <script src="main.js"></script>
+</body>
+</html>
